@@ -3,134 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anime Screensaver</title>
+    <title>Realistische Anime Screensaver</title>
     <style>
-        /* Basis styles */
         html, body {
             margin: 0;
             padding: 0;
             overflow: hidden;
             width: 100%;
             height: 100%;
-            background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364);
+            background: linear-gradient(to bottom, #0b0c1c, #2e3a5c, #5a7dbf);
             font-family: 'Arial', sans-serif;
         }
-
-        /* Canvas full screen */
         canvas {
             display: block;
-        }
-
-        /* Optioneel: glinsterende lichtjes */
-        .glow {
-            position: absolute;
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.8);
-            box-shadow: 0 0 10px rgba(255,255,255,0.8);
         }
     </style>
 </head>
 <body>
-    <canvas id="animeCanvas"></canvas>
+<canvas id="animeCanvas"></canvas>
 
-    <script>
-        const canvas = document.getElementById('animeCanvas');
-        const ctx = canvas.getContext('2d');
-        let width = canvas.width = window.innerWidth;
-        let height = canvas.height = window.innerHeight;
+<script>
+const canvas = document.getElementById('animeCanvas');
+const ctx = canvas.getContext('2d');
+let width = canvas.width = window.innerWidth;
+let height = canvas.height = window.innerHeight;
 
-        window.addEventListener('resize', () => {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-        });
+window.addEventListener('resize', () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+});
 
-        // Sakura-bloesems
-        class Petal {
-            constructor() {
-                this.reset();
-            }
+/* -------------------------
+   Anime Skyline & Scene
+------------------------- */
+class Cloud {
+    constructor() {
+        this.reset();
+    }
+    reset() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height * 0.5;
+        this.size = 50 + Math.random() * 100;
+        this.speed = 0.1 + Math.random() * 0.3;
+    }
+    update() {
+        this.x += this.speed;
+        if(this.x - this.size > width) this.x = -this.size;
+    }
+    draw(ctx) {
+        ctx.beginPath();
+        ctx.ellipse(this.x, this.y, this.size, this.size * 0.6, 0, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255,255,255,0.3)";
+        ctx.fill();
+    }
+}
 
-            reset() {
-                this.x = Math.random() * width;
-                this.y = Math.random() * -height;
-                this.radius = 2 + Math.random() * 4;
-                this.speedY = 1 + Math.random() * 3;
-                this.speedX = Math.random() * 1 - 0.5;
-                this.angle = Math.random() * 2 * Math.PI;
-                this.spin = Math.random() * 0.02 - 0.01;
-            }
+class SakuraPetal {
+    constructor() {
+        this.reset();
+    }
+    reset() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * -height;
+        this.radius = 2 + Math.random() * 4;
+        this.speedY = 1 + Math.random() * 3;
+        this.speedX = Math.random() * 0.5 - 0.25;
+        this.angle = Math.random() * Math.PI * 2;
+        this.spin = Math.random() * 0.02 - 0.01;
+    }
+    update() {
+        this.y += this.speedY;
+        this.x += this.speedX + Math.sin(this.angle);
+        this.angle += this.spin;
+        if(this.y > height || this.x < 0 || this.x > width) this.reset();
+    }
+    draw(ctx) {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+        ctx.fillStyle = "rgba(255, 182, 193, 0.8)";
+        ctx.fill();
+    }
+}
 
-            update() {
-                this.y += this.speedY;
-                this.x += this.speedX + Math.sin(this.angle);
-                this.angle += this.spin;
+class GlowLight {
+    constructor() {
+        this.reset();
+    }
+    reset() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.radius = Math.random() * 2 + 1;
+        this.alpha = Math.random();
+        this.alphaSpeed = Math.random() * 0.02;
+    }
+    update() {
+        this.alpha += this.alphaSpeed;
+        if(this.alpha > 1 || this.alpha < 0) this.alphaSpeed *= -1;
+    }
+    draw(ctx) {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${this.alpha})`;
+        ctx.fill();
+    }
+}
 
-                if(this.y > height || this.x < 0 || this.x > width) {
-                    this.reset();
+class Building {
+    constructor(x, width, height) {
+        this.x = x;
+        this.width = width;
+        this.height = height;
+        this.color = `rgba(${30 + Math.random()*50}, ${30 + Math.random()*50}, ${50 + Math.random()*50}, 0.8)`;
+        this.windowLights = [];
+        this.generateWindows();
+    }
+    generateWindows() {
+        const rows = Math.floor(this.height / 20);
+        const cols = Math.floor(this.width / 20);
+        for(let r=0;r<rows;r++){
+            for(let c=0;c<cols;c++){
+                if(Math.random() > 0.7){
+                    this.windowLights.push({x:c*20+5, y:r*20+5});
                 }
             }
-
-            draw(ctx) {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = "rgba(255, 182, 193, 0.8)";
-                ctx.fill();
-            }
         }
+    }
+    draw(ctx) {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, height-this.height, this.width, this.height);
+        ctx.fillStyle = "yellow";
+        this.windowLights.forEach(win=>{
+            ctx.fillRect(this.x + win.x, height-this.height + win.y, 8, 12);
+        });
+    }
+}
 
-        const petals = [];
-        for(let i=0; i<150; i++){
-            petals.push(new Petal());
-        }
+/* -------------------------
+   Initialize Scene Objects
+------------------------- */
+const clouds = [];
+for(let i=0;i<15;i++) clouds.push(new Cloud());
 
-        // Glow lights (optioneel)
-        class Glow {
-            constructor() {
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
-                this.radius = Math.random() * 2 + 1;
-                this.alpha = Math.random();
-                this.alphaSpeed = Math.random() * 0.02;
-            }
+const petals = [];
+for(let i=0;i<200;i++) petals.push(new SakuraPetal());
 
-            update() {
-                this.alpha += this.alphaSpeed;
-                if(this.alpha > 1 || this.alpha < 0) this.alphaSpeed *= -1;
-            }
+const glows = [];
+for(let i=0;i<100;i++) glows.push(new GlowLight());
 
-            draw(ctx) {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(255,255,255,${this.alpha})`;
-                ctx.fill();
-            }
-        }
+const buildings = [];
+let currentX = 0;
+while(currentX < width){
+    const w = 50 + Math.random()*100;
+    const h = 100 + Math.random()*200;
+    buildings.push(new Building(currentX, w, h));
+    currentX += w + Math.random()*20;
+}
 
-        const glows = [];
-        for(let i=0; i<50; i++){
-            glows.push(new Glow());
-        }
+/* -------------------------
+   Animation Loop
+------------------------- */
+function animate(){
+    // Background gradient
+    const gradient = ctx.createLinearGradient(0,0,0,height);
+    gradient.addColorStop(0, "#0b0c1c");
+    gradient.addColorStop(0.5, "#2e3a5c");
+    gradient.addColorStop(1, "#5a7dbf");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0,0,width,height);
 
-        // Animatie loop
-        function animate() {
-            ctx.clearRect(0, 0, width, height);
+    // Clouds
+    clouds.forEach(c=>{c.update(); c.draw(ctx);});
 
-            petals.forEach(p => {
-                p.update();
-                p.draw(ctx);
-            });
+    // Buildings
+    buildings.forEach(b=>b.draw(ctx));
 
-            glows.forEach(g => {
-                g.update();
-                g.draw(ctx);
-            });
+    // Sakura petals
+    petals.forEach(p=>{p.update(); p.draw(ctx);});
 
-            requestAnimationFrame(animate);
-        }
+    // Glow lights
+    glows.forEach(g=>{g.update(); g.draw(ctx);});
 
-        animate();
-    </script>
+    requestAnimationFrame(animate);
+}
+
+animate();
+</script>
 </body>
 </html>
