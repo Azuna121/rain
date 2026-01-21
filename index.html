@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Echte Regen Preview</title>
+    <title>Realistische Regen</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         html, body {
@@ -11,8 +11,7 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background: url('https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=1600&q=80') no-repeat center center fixed;
-            background-size: cover;
+            background: #0a0c14;
         }
         canvas {
             display: block;
@@ -20,37 +19,83 @@
     </style>
 </head>
 <body>
-
 <canvas id="rainCanvas"></canvas>
-
-<!-- RainyDay.js library via CDN -->
-<script src="https://cdn.jsdelivr.net/npm/rainyday.js@0.0.1/rainyday.min.js"></script>
 <script>
-window.onload = function() {
-    // Achtergrond afbeelding voor regen effect
-    var image = document.getElementById('rainCanvas');
+const canvas = document.getElementById('rainCanvas');
+const ctx = canvas.getContext('2d');
 
-    // Maak een RainyDay engine
-    var engine = new RainyDay({
-        image: new Image(),
-        parentElement: document.body,
-        enableSizeChange: true,
-        blur: 10,       // achtergrond blur
-        fps: 30
-    });
+let W, H;
+function resizeCanvas() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
 
-    // Gebruik een mooie regenachtergrond
-    engine.image.src = 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=1600&q=80';
+// Raindrop class
+class Raindrop {
+    constructor() {
+        this.reset();
+    }
 
-    engine.image.onload = function() {
-        engine.rain([
-            [3, 3, 0.9],   // droplet parameters: [width, height, opacity]
-            [5, 5, 0.95],
-            [6, 2, 1]
-        ], 100);           // aantal druppels
-    };
-};
+    reset() {
+        this.x = Math.random() * W;
+        this.y = Math.random() * H - H;
+        this.z = Math.random(); // diepte
+        this.len = 10 + 20 * this.z;
+        this.speed = 4 + 10 * this.z;
+        this.width = 0.5 + 1.5 * this.z;
+        this.opacity = 0.1 + 0.3 * this.z;
+        this.wind = -0.2 + Math.random() * 0.4;
+    }
+
+    update() {
+        this.y += this.speed;
+        this.x += this.wind;
+        if (this.y > H) {
+            this.reset();
+            this.y = -this.len;
+        }
+        if (this.x < 0 || this.x > W) {
+            this.x = Math.random() * W;
+        }
+    }
+
+    draw(ctx) {
+        ctx.strokeStyle = `rgba(180,200,255,${this.opacity})`;
+        ctx.lineWidth = this.width;
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x - this.wind*2, this.y - this.len);
+        ctx.stroke();
+    }
+}
+
+// Maak veel druppels
+let raindrops = [];
+function populateRain(count) {
+    for (let i = 0; i < count; i++) {
+        raindrops.push(new Raindrop());
+    }
+}
+
+function animate() {
+    // fade voor trails
+    ctx.fillStyle = 'rgba(10,12,20,0.3)';
+    ctx.fillRect(0,0,W,H);
+
+    // update & draw druppels
+    for (let drop of raindrops) {
+        drop.update();
+        drop.draw(ctx);
+    }
+
+    requestAnimationFrame(animate);
+}
+
+// start
+populateRain(Math.floor(W / 2));
+animate();
 </script>
-
 </body>
 </html>
