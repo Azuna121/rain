@@ -2,9 +2,8 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Rustige Regen</title>
+    <title>Realistische Regen</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <style>
         html, body {
             margin: 0;
@@ -14,7 +13,6 @@
             overflow: hidden;
             background: linear-gradient(to bottom, #0a0c14, #1b2735);
         }
-
         canvas {
             display: block;
         }
@@ -25,55 +23,69 @@
 <canvas id="rain"></canvas>
 
 <script>
-    const canvas = document.getElementById("rain");
-    const ctx = canvas.getContext("2d");
+const canvas = document.getElementById('rain');
+const ctx = canvas.getContext('2d');
 
-    let width, height;
-    let drops = [];
+let width, height;
+let drops = [];
 
-    function resize() {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
-        drops = Array.from({ length: Math.floor(width / 4) }, createDrop);
+function resize() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+    drops = [];
+    const totalDrops = Math.floor(width / 2); // meer druppels voor realisme
+    for (let i = 0; i < totalDrops; i++) {
+        drops.push(createDrop());
     }
+}
 
-    function createDrop() {
-        return {
-            x: Math.random() * width,
-            y: Math.random() * height,
-            length: 15 + Math.random() * 25, // langere druppels
-            speed: 2 + Math.random() * 3,    // variabele snelheid
-            opacity: 0.1 + Math.random() * 0.3 // subtielere opacity
-        };
-    }
+function createDrop() {
+    const z = Math.random(); // diepte (0 = ver, 1 = dichtbij)
+    return {
+        x: Math.random() * width,
+        y: Math.random() * height,
+        z: z,
+        length: 10 + 20 * z,           // dichterbij = langere druppels
+        speed: 2 + 8 * z,              // dichterbij = sneller
+        width: 0.5 + 1.5 * z,          // dichterbij = dikker
+        opacity: 0.05 + 0.25 * z,      // dichterbij = iets feller
+        wind: -1 + Math.random() * 2    // lichte wind
+    };
+}
 
-    function update() {
-        ctx.clearRect(0, 0, width, height);
-        ctx.lineWidth = 1;
-        ctx.lineCap = "round";
+function update() {
+    // trail-effect voor zachte regen
+    ctx.fillStyle = 'rgba(10,12,20,0.3)';
+    ctx.fillRect(0, 0, width, height);
 
-        for (const drop of drops) {
-            ctx.strokeStyle = `rgba(180, 200, 255, ${drop.opacity})`;
-            ctx.beginPath();
-            ctx.moveTo(drop.x, drop.y);
-            ctx.lineTo(drop.x, drop.y + drop.length);
-            ctx.stroke();
+    for (const drop of drops) {
+        ctx.strokeStyle = `rgba(180, 200, 255, ${drop.opacity})`;
+        ctx.lineWidth = drop.width;
+        ctx.beginPath();
+        ctx.moveTo(drop.x, drop.y);
+        ctx.lineTo(drop.x + drop.wind, drop.y + drop.length);
+        ctx.stroke();
 
-            drop.y += drop.speed;
+        drop.y += drop.speed;
+        drop.x += drop.wind * 0.2;
 
-            if (drop.y > height) {
-                drop.y = -drop.length;
-                drop.x = Math.random() * width;
-            }
+        // opnieuw bovenaan laten vallen als uit beeld
+        if (drop.y > height) {
+            drop.y = -drop.length;
+            drop.x = Math.random() * width;
         }
-
-        requestAnimationFrame(update);
+        if (drop.x > width || drop.x < 0) {
+            drop.x = Math.random() * width;
+        }
     }
 
-    window.addEventListener("resize", resize);
+    requestAnimationFrame(update);
+}
 
-    resize();
-    update();
+window.addEventListener('resize', resize);
+
+resize();
+update();
 </script>
 
 </body>
