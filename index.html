@@ -35,6 +35,30 @@
         white-space: pre-wrap;
         width: 60%;
         line-height: 1.5;
+        text-align: center;
+    }
+
+    /* Buttons */
+    .centerButton {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 12px 28px;
+        font-size: 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        background: rgba(255,255,255,0.2);
+        color: #fff;
+        text-shadow: 1px 1px 5px rgba(0,0,0,0.5);
+        backdrop-filter: blur(5px);
+        z-index: 1;
+        transition: background 0.3s, transform 0.2s;
+    }
+    .centerButton:hover {
+        background: rgba(255,255,255,0.4);
+        transform: translate(-50%, -50%) scale(1.05);
     }
 </style>
 </head>
@@ -42,6 +66,8 @@
 <canvas id="animeCanvas"></canvas>
 
 <div id="typedText"></div>
+<button id="aboutButton" class="centerButton">About</button>
+<button id="goBackButton" class="centerButton" style="display:none;">Go Back</button>
 
 <script>
 const canvas = document.getElementById('animeCanvas');
@@ -143,18 +169,21 @@ function animate() {
 animate();
 
 /* -------------------------
-   Anime typing text effect
+   Typing text effect
 ------------------------- */
 const textContainer = document.getElementById('typedText');
+const aboutButton = document.getElementById('aboutButton');
+const goBackButton = document.getElementById('goBackButton');
+
 const fullText = `Asuna’s Café is a cozy server where all kinds of people can come together and chat ♡|
 You can talk about anything, meet new friends and relax in a friendly vibe.|
 We also have a few café style RP channels for fun! ☕|
 Need comfort or someone to listen to you? You’re always welcome (No one ignores you.)`;
 
+let typingSpeed = 50;
 let i = 0;
-let typingSpeed = 50; // ms per character
 
-function type() {
+function typeText() {
     if(i < fullText.length) {
         if(fullText[i] === '|') {
             textContainer.innerHTML += '\n';
@@ -162,11 +191,24 @@ function type() {
             textContainer.innerHTML += fullText[i];
         }
         i++;
-        setTimeout(type, typingSpeed);
+        setTimeout(typeText, typingSpeed);
+    } else {
+        goBackButton.style.display = 'block';
     }
 }
 
-type();
+aboutButton.addEventListener('click', () => {
+    aboutButton.style.display = 'none';
+    textContainer.innerHTML = '';
+    i = 0;
+    typeText();
+});
+
+goBackButton.addEventListener('click', () => {
+    textContainer.innerHTML = '';
+    goBackButton.style.display = 'none';
+    aboutButton.style.display = 'block';
+});
 </script>
 </body>
 </html>
