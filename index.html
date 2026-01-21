@@ -22,48 +22,26 @@
         z-index: 0;
     }
 
-    /* Centrale tekst */
-    #centerText {
+    /* Typing text */
+    #typedText {
         position: absolute;
-        top: 40%;
+        top: 45%;
         left: 50%;
         transform: translate(-50%, -50%);
         color: #fff;
-        font-size: 48px;
+        font-size: 24px;
         text-shadow: 2px 2px 10px rgba(0,0,0,0.7);
         z-index: 1;
-        text-align: center;
-    }
-
-    /* Centrale knop */
-    #aboutButton {
-        position: absolute;
-        top: 55%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        padding: 12px 28px;
-        font-size: 20px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        background: rgba(255,255,255,0.2);
-        color: #fff;
-        text-shadow: 1px 1px 5px rgba(0,0,0,0.5);
-        backdrop-filter: blur(5px);
-        z-index: 1;
-        transition: background 0.3s, transform 0.2s;
-    }
-    #aboutButton:hover {
-        background: rgba(255,255,255,0.4);
-        transform: translate(-50%, -50%) scale(1.05);
+        white-space: pre-wrap;
+        width: 60%;
+        line-height: 1.5;
     }
 </style>
 </head>
 <body>
 <canvas id="animeCanvas"></canvas>
 
-<div id="centerText">Asuna's Café</div>
-<button id="aboutButton">About</button>
+<div id="typedText"></div>
 
 <script>
 const canvas = document.getElementById('animeCanvas');
@@ -77,7 +55,7 @@ window.addEventListener('resize', () => {
 });
 
 /* -------------------------
-   Petals (vallende bloesems)
+   Anime background elements
 ------------------------- */
 class Petal {
     constructor() { this.reset(); }
@@ -102,7 +80,6 @@ class Petal {
         ctx.translate(this.x, this.y);
         ctx.rotate(this.angle);
         ctx.beginPath();
-        ctx.moveTo(0, 0);
         ctx.arc(0, 0, this.radius, 0, Math.PI*2);
         ctx.fillStyle = this.color;
         ctx.fill();
@@ -110,9 +87,6 @@ class Petal {
     }
 }
 
-/* -------------------------
-   Glow lights (zwevende magische lichtjes)
-------------------------- */
 class Glow {
     constructor() { this.reset(); }
     reset() {
@@ -155,33 +129,44 @@ for(let i=0;i<100;i++) glows.push(new Glow());
    Animation loop
 ------------------------- */
 function animate() {
-    // Clear background with soft gradient
     const gradient = ctx.createLinearGradient(0,0,0,height);
     gradient.addColorStop(0, "#1e1f3a");
     gradient.addColorStop(1, "#3e3f7f");
     ctx.fillStyle = gradient;
     ctx.fillRect(0,0,width,height);
 
-    // Draw petals
     petals.forEach(p => { p.update(); p.draw(ctx); });
-
-    // Draw glow lights
     glows.forEach(g => { g.update(); g.draw(ctx); });
 
     requestAnimationFrame(animate);
 }
-
 animate();
 
 /* -------------------------
-   About button
+   Anime typing text effect
 ------------------------- */
-document.getElementById('aboutButton').addEventListener('click', () => {
-    alert(`Asuna’s Café is a cozy server where all kinds of people can come together and chat ♡
-You can talk about anything, meet new friends and relax in a friendly vibe.
-We also have a few café style RP channels for fun! ☕
-Need comfort or someone to listen to you? You’re always welcome (No one ignores you.)`);
-});
+const textContainer = document.getElementById('typedText');
+const fullText = `Asuna’s Café is a cozy server where all kinds of people can come together and chat ♡|
+You can talk about anything, meet new friends and relax in a friendly vibe.|
+We also have a few café style RP channels for fun! ☕|
+Need comfort or someone to listen to you? You’re always welcome (No one ignores you.)`;
+
+let i = 0;
+let typingSpeed = 50; // ms per character
+
+function type() {
+    if(i < fullText.length) {
+        if(fullText[i] === '|') {
+            textContainer.innerHTML += '\n';
+        } else {
+            textContainer.innerHTML += fullText[i];
+        }
+        i++;
+        setTimeout(type, typingSpeed);
+    }
+}
+
+type();
 </script>
 </body>
 </html>
