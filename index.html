@@ -2,8 +2,8 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>Ultra Realistische Regen</title>
+    <title>Echte Regen Preview</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         html, body {
             margin: 0;
@@ -11,7 +11,8 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background: #0a0c14;
+            background: url('https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=1600&q=80') no-repeat center center fixed;
+            background-size: cover;
         }
         canvas {
             display: block;
@@ -19,156 +20,37 @@
     </style>
 </head>
 <body>
+
 <canvas id="rainCanvas"></canvas>
+
+<!-- RainyDay.js library via CDN -->
+<script src="https://cdn.jsdelivr.net/npm/rainyday.js@0.0.1/rainyday.min.js"></script>
 <script>
-/**
- * Ultra Realistic Rain Simulation
- * - Multi‑layer drops with depth
- * - Variable wind + gravity + splash physics
- * - Trail fade & opacity control
- */
+window.onload = function() {
+    // Achtergrond afbeelding voor regen effect
+    var image = document.getElementById('rainCanvas');
 
-// Canvas setup
-const canvas = document.getElementById('rainCanvas');
-const ctx = canvas.getContext('2d');
-let W, H;
+    // Maak een RainyDay engine
+    var engine = new RainyDay({
+        image: new Image(),
+        parentElement: document.body,
+        enableSizeChange: true,
+        blur: 10,       // achtergrond blur
+        fps: 30
+    });
 
-function resizeCanvas() {
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-}
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
+    // Gebruik een mooie regenachtergrond
+    engine.image.src = 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=1600&q=80';
 
-// Physics configuration
-const GRAVITY = 0.98;
-const AIR_RESISTANCE = 0.99;
-const WIND_MIN = -0.2;
-const WIND_MAX = 0.4;
-
-// Raindrop container
-let raindrops = [];
-let splashes = [];
-
-// Raindrop prototype class
-class Raindrop {
-    constructor() {
-        this.init();
-    }
-
-    init() {
-        this.depth = Math.random(); // 0 = ver weg, 1 = dichtbij
-        this.x = Math.random() * W;
-        this.y = Math.random() * (-H);
-        this.speedY = 4 + 10 * this.depth;
-        this.speedX = WIND_MIN + Math.random() * (WIND_MAX - WIND_MIN);
-        this.length = 15 + 25 * this.depth;
-        this.opacity = 0.1 + 0.3 * this.depth;
-        this.width = 1 + 1.5 * this.depth;
-        this.hitGround = false;
-    }
-
-    update() {
-        // apply physics
-        this.speedY += GRAVITY * 0.015;
-        this.speedX *= AIR_RESISTANCE;
-
-        this.x += this.speedX;
-        this.y += this.speedY;
-
-        // if off bottom -> spawn splash
-        if (this.y >= H && !this.hitGround) {
-            this.hitGround = true;
-            createSplash(this.x, H);
-        }
-
-        // if completely offscreen reset
-        if (this.y > H + 50 || this.x < -50 || this.x > W + 50) {
-            this.init();
-            this.y = -this.length;
-        }
-    }
-
-    draw(ctx) {
-        ctx.strokeStyle = `rgba(180,200,255,${this.opacity})`;
-        ctx.lineWidth = this.width;
-        ctx.beginPath();
-        ctx.moveTo(this.x, this.y);
-        ctx.lineTo(this.x - this.speedX, this.y - this.length);
-        ctx.stroke();
-    }
-}
-
-// Splash particles class
-class Splash {
-    constructor(x, y) {
-        this.x = x;
-        this.y = y;
-        this.life = 1.0;
-        this.vx = (Math.random()-0.5)*4;
-        this.vy = -Math.random() * 4 - 2;
-        this.opacity = 0.6;
-    }
-
-    update() {
-        this.vy += GRAVITY * 0.04;
-        this.x += this.vx;
-        this.y += this.vy;
-        this.opacity *= 0.96;
-        this.life *= 0.96;
-    }
-
-    draw(ctx) {
-        ctx.fillStyle = `rgba(180,200,255,${this.opacity})`;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, 1.5 * this.life, 0, Math.PI*2);
-        ctx.fill();
-    }
-}
-
-// Create a splash cluster
-function createSplash(x, y) {
-    const count = 5 + Math.floor(Math.random()*8);
-    for (let i=0; i<count; i++) {
-        splashes.push(new Splash(x, y));
-    }
-}
-
-// initialize raindrops
-function populateRain(count) {
-    for (let i = 0; i < count; i++) {
-        raindrops.push(new Raindrop());
-    }
-}
-
-// main draw loop
-function animate() {
-    // trail fade
-    ctx.fillStyle = 'rgba(10,12,20,0.3)';
-    ctx.fillRect(0, 0, W, H);
-
-    // update & draw raindrops
-    for (let drop of raindrops) {
-        drop.update();
-        drop.draw(ctx);
-    }
-
-    // update & draw splashes
-    for (let i = splashes.length - 1; i >= 0; i--) {
-        splashes[i].update();
-        splashes[i].draw(ctx);
-        if (splashes[i].life <= 0.02) {
-            splashes.splice(i, 1);
-        }
-    }
-
-    requestAnimationFrame(animate);
-}
-
-// start simulation
-populateRain(Math.floor(W / 3)); // adjust density
-animate();
-
+    engine.image.onload = function() {
+        engine.rain([
+            [3, 3, 0.9],   // droplet parameters: [width, height, opacity]
+            [5, 5, 0.95],
+            [6, 2, 1]
+        ], 100);           // aantal druppels
+    };
+};
 </script>
+
 </body>
 </html>
