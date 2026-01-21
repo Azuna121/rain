@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anime Vibes Screensaver</title>
+<title>Asuna's Café</title>
 <style>
     html, body {
         margin: 0;
@@ -22,10 +22,22 @@
         z-index: 0;
     }
 
+    /* Titel */
+    #title {
+        position: absolute;
+        top: 15%;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #fff;
+        font-size: 48px;
+        text-shadow: 2px 2px 10px rgba(0,0,0,0.7);
+        z-index: 1;
+    }
+
     /* Typing text */
     #typedText {
         position: absolute;
-        top: 45%;
+        top: 40%;
         left: 50%;
         transform: translate(-50%, -50%);
         color: #fff;
@@ -41,9 +53,8 @@
     /* Buttons */
     .centerButton {
         position: absolute;
-        top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%);
+        transform: translateX(-50%);
         padding: 12px 28px;
         font-size: 20px;
         border: none;
@@ -58,16 +69,38 @@
     }
     .centerButton:hover {
         background: rgba(255,255,255,0.4);
-        transform: translate(-50%, -50%) scale(1.05);
+        transform: translateX(-50%) scale(1.05);
+    }
+
+    #aboutButton { top: 55%; }
+    #joinButton { top: 65%; }
+    #goBackButton { top: 85%; display:none; }
+
+    /* Knipperende cursor */
+    .cursor {
+        display:inline-block;
+        width:1px;
+        background:white;
+        margin-left:2px;
+        animation: blink 1s steps(2, start) infinite;
+        vertical-align: bottom;
+    }
+
+    @keyframes blink {
+        0%, 50% { opacity:1; }
+        51%, 100% { opacity:0; }
     }
 </style>
 </head>
 <body>
 <canvas id="animeCanvas"></canvas>
 
+<div id="title">Asuna's Café</div>
 <div id="typedText"></div>
+
 <button id="aboutButton" class="centerButton">About</button>
-<button id="goBackButton" class="centerButton" style="display:none;">Go Back</button>
+<button id="joinButton" class="centerButton">Join</button>
+<button id="goBackButton" class="centerButton">Go Back</button>
 
 <script>
 const canvas = document.getElementById('animeCanvas');
@@ -169,10 +202,11 @@ function animate() {
 animate();
 
 /* -------------------------
-   Typing text effect
+   Typing text effect with cursor
 ------------------------- */
 const textContainer = document.getElementById('typedText');
 const aboutButton = document.getElementById('aboutButton');
+const joinButton = document.getElementById('joinButton');
 const goBackButton = document.getElementById('goBackButton');
 
 const fullText = `Asuna’s Café is a cozy server where all kinds of people can come together and chat ♡|
@@ -184,12 +218,12 @@ let typingSpeed = 50;
 let i = 0;
 
 function typeText() {
-    if(i < fullText.length) {
-        if(fullText[i] === '|') {
-            textContainer.innerHTML += '\n';
-        } else {
-            textContainer.innerHTML += fullText[i];
+    if(i <= fullText.length) {
+        let displayText = '';
+        for(let j=0;j<i;j++){
+            displayText += (fullText[j]==='|'?'\n':fullText[j]);
         }
+        textContainer.innerHTML = displayText + '<span class="cursor"></span>';
         i++;
         setTimeout(typeText, typingSpeed);
     } else {
@@ -197,10 +231,14 @@ function typeText() {
     }
 }
 
+/* -------------------------
+   Button events
+------------------------- */
 aboutButton.addEventListener('click', () => {
     aboutButton.style.display = 'none';
-    textContainer.innerHTML = '';
+    joinButton.style.display = 'none';
     i = 0;
+    textContainer.innerHTML = '';
     typeText();
 });
 
@@ -208,6 +246,11 @@ goBackButton.addEventListener('click', () => {
     textContainer.innerHTML = '';
     goBackButton.style.display = 'none';
     aboutButton.style.display = 'block';
+    joinButton.style.display = 'block';
+});
+
+joinButton.addEventListener('click', () => {
+    window.open('https://discord.gg/5Phsb9wDdN', '_blank');
 });
 </script>
 </body>
